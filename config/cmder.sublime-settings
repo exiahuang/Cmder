@@ -1,0 +1,61 @@
+{
+	// ${workspaceFolder} - the path of the folder opened in Sublime
+	// ${workspaceFolderBasename} - the name of the folder opened in Sublime without any slashes (/)
+	// ${file} - the current opened file
+	// ${relativeFile} - the current opened file relative to workspaceFolder
+	// ${fileBasename} - the current opened file's basename
+	// ${fileBasenameNoExtension} - the current opened file's basename with no file extension
+	// ${fileDirname} - the current opened file's dirname
+	// ${fileExtname} - the current opened file's extension
+	// ${cwd} - the task runner's current working directory on startup
+	// ${selectedText} - the current selected text in the active file
+    // ${input:custom_string} - Custom String
+    // set default input value in "custom_env" object
+	"tasks" : [
+		{
+			"label" : "echo:env",
+			"command": "echo JAVA_HOME:${env:JAVA_HOME}, USERPROFILE:${env:USERPROFILE}"
+		},
+		{
+			"label" : "echo:test",
+			"command": "echo ${input:param1}, ${input:log_file}, ${select:LOGLEVEL}"
+		},
+		{
+			"label" : "node:version",
+			"encoding": "UTF-8",
+			"command": "node -v"
+		},
+		{
+			"label" : "node:hello-world",
+			"command": "echo console.log('hello world'); >> ./hello-world.js"
+		},
+		{
+			"label" : "node:run",
+			"encoding": "UTF-8",
+			"command": "node ${file}"
+		},
+		{
+			"label" : "java:version",
+			"os_termial": true,
+			"command": "java -version"
+		},
+		{
+			"label" : "ruby:version",
+			"encoding": "UTF-8",
+			"command": "ruby -v"
+		},
+		{
+			"label" : "python:version",
+			"encoding": "UTF-8",
+			"command": "python --version"
+		},
+		{
+			"label" : "php:version",
+			"command": "php -v"
+		},
+	],
+    "custom_env" : {
+        "log_file" : "./tmp.log",
+        "LOGLEVEL" : ["trace", "debug", "info", "warn", "error", "fatal"]
+    }
+}

@@ -1,0 +1,47 @@
+[
+    {
+        "caption": "Cmder",
+        "mnemonic": "C",
+        "id": "ExiaCmder",
+        "children":
+        [
+            {
+                "caption": "Run Cmder",
+                "command": "cmder"
+            },
+            {  
+                "caption":"Settings – Default" ,  
+                "command": "open_file", "args":  
+                {  
+                    "file": "${packages}/Cmder/config/cmder.sublime-settings"  
+                }     
+            },  
+            {  
+                "caption":"Settings – User" ,  
+                "command": "open_cmder_setting"
+            },
+            { "caption": "-" },
+            {
+                "caption": "Home Page",
+                "command": "exia_open_url",
+                "args":{  
+                            "url": "http://salesforcexytools.com/"  
+                        }
+            },
+            {
+                "caption": "Cmder Help",
+                "command": "exia_open_url",
+                "args":{  
+                            "url": "https://github.com/exiahuang/Cmder/wiki/CmderHelp"  
+                        }
+            },
+            {
+                "caption": "Github",
+                "command": "exia_open_url",
+                "args":{  
+                            "url": "https://github.com/exiahuang/Cmder"  
+                        }
+            },
+        ]
+    }
+]

@@ -1,0 +1,21 @@
+{
+	"schema_version": "3.0.0",
+	"packages": [
+		{
+			"name": "Cmder",
+			"description": "Cmder for Sublime Text run customer command, `Cmder for Sublime Text`  run any command. You can use it to run any os command, such as python, java, ruby, go, c, c++, github, docker, heroku, etc.",
+			"author": "Exia.Huangxy",
+			"homepage": "https://github.com/exiahuang/Cmder",
+			"last_modified": "2019-06-15 19:00:00",
+			"platforms": {
+				"*": [
+					{
+						"version": "1.0.0",
+						"release_notes": "",
+						"url": "https://nodeload.github.com/exiahuang/Cmder/zipball/master"
+					}
+				]
+			}
+		}
+	]
+}
