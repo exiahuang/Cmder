@@ -1,3 +1,9 @@
+###############################################################################
+# MIT License
+# author: Exia.Huang
+# github: https://github.com/exiahuang
+###############################################################################
+
 import sublime_plugin
 import webbrowser
 

@@ -1,3 +1,9 @@
+###############################################################################
+# MIT License
+# author: Exia.Huang
+# github: https://github.com/exiahuang
+###############################################################################
+
 import os,sys, subprocess,threading
 
 class OsUtil():
