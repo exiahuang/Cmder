@@ -46,7 +46,27 @@ class CmderCommand(sublime_plugin.WindowCommand):
         self.task = self.sel_vals[picked]
         is_os_termial = self.task["os_termial"] if "os_termial" in self.task else False
         encoding = self.task["encoding"] if "encoding" in self.task else None
-        Cmder().run(self.window, self.env, self.task["command"], sublconsole=self.sublconsole, is_os_termial=is_os_termial, encoding=encoding)
+        Cmder().run(self.window, self.env, self.task, sublconsole=self.sublconsole, is_os_termial=is_os_termial, encoding=encoding)
+
+
+class PrintCmderCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        self.window = sublime.active_window()
+        self.sublconsole = SublConsole(window=self.window, name='Cmder')
+        s = sublime.load_settings(CMDER_SETTING)
+        commands = []
+        commands.append("| Lable | Command | Description |")
+        commands.append("| ---- | ---- | ---- |")
+        for task in s.get("tasks"):
+            desc = task["desc"] if "desc" in task else ""
+            line = '| %s | %s | %s |' % (self.replace_special_code(task["label"]), self.replace_special_code(task["command"]), self.replace_special_code(desc))
+            commands.append(line)
+        self.sublconsole.show_in_new_tab("\n".join(commands), name="cmder-help.md")
+
+    def replace_special_code(self, str1):
+        if str1 is None : return ""
+        return str1.replace("|", "&#124;").replace("$", r"\$")
+        # return str1.replace("|", "&#124;")
 
 class DxEnv():
     def get_env(self):
@@ -75,11 +95,21 @@ class CommandEnv():
     def __init__(self, window):
         self.window = window
 
+    def __get_executable_path(self):
+        executable_path = sublime.executable_path()
+        if sublime.platform() == 'osx':
+            app_path = executable_path[:executable_path.rfind(".app/") + 5]
+            executable_path = app_path + "Contents/SharedSupport/bin/subl"
+        return executable_path
+
     def get_env(self):
         workspaceFolder = self._get_workspaceFolder()
         file = self.window.active_view().file_name()
         if file is None : file = ""
         fileBasenameNoExtension, fileExtname = os.path.splitext(os.path.basename(file))
+        workspaceFolderDirname = os.path.dirname(workspaceFolder)
+        relativeDirs = [ os.path.join(workspaceFolderDirname, name) for name in os.listdir(workspaceFolderDirname) 
+                         if os.path.isdir(os.path.join(workspaceFolderDirname, name))] if os.path.exists(workspaceFolderDirname) else []
         env = {
             "cwd" : workspaceFolder,
             "workspaceFolder" : workspaceFolder,
@@ -88,9 +118,11 @@ class CommandEnv():
             "fileBasenameNoExtension": fileBasenameNoExtension,
             "fileExtname": fileExtname,
             "relativeFile" : file.replace(workspaceFolder, ""),
+            "relativeDirs" : relativeDirs,
             "fileBasename": os.path.basename(file),
             "fileDirname" : os.path.dirname(file),
             "selectedText" : self.__get_sel_text(),
+            "execPath" : self.__get_executable_path(),
         }
         # print(env)
         return env
@@ -114,15 +146,16 @@ class CommandEnv():
 
 
 class Cmder():
-    def run(self, window, command_env, command, sublconsole, is_os_termial=False, encoding='UTF-8'):
+    def run(self, window, command_env, task, sublconsole, is_os_termial=False, encoding='UTF-8'):
         self.index = 0
         self.window = window
         self.sublconsole = sublconsole
         self.encoding = encoding
         self.is_os_termial = is_os_termial
         self.env = command_env
-        self.command = command
-        self.params = self.__get_command_params(command)
+        self.task = task
+        self.command = task["command"]
+        self.params = self.__get_command_params(self.command)
         self.osutil = OsUtil(platform=sublime.platform(), sublconsole=self.sublconsole)
         UiWizard(command_params=self.params, 
                 window=self.window, 
@@ -142,6 +175,10 @@ class Cmder():
         for param in user_params:
             command = command.replace(param["param"], param["value"])
             if not param["value"]: msgs.append("%s is null! please check it." % param["param"])
+
+        if "type" in self.task:
+            if self.task["type"].lower() == "bash":
+                command = "bash -c {}".format(self.__shellquote(command))
         
         if len(msgs) > 0:
             self.sublconsole.showlog("\n".join(msgs), type='error')
@@ -152,6 +189,9 @@ class Cmder():
                 self.osutil.run_in_os_termial(cmds)
             else:
                 self.osutil.run_in_sublime_cmd(cmds, encoding=self.encoding)
+
+    def __shellquote(self, s):
+        return "\"" + s.replace("\"", "\\\"").replace("$", r"\$") + "\""
 
     def __get_sys_env(self, command):
         pattern = r"\${(env)(\s)*:(\s)*([^} ]+)(\s)*}"
@@ -189,6 +229,8 @@ class Cmder():
                     if key in self.env:
                         if isinstance(self.env[key], list):
                             data["option"] = data["option-v"] = self.env[key]
+                    if len(data["option"]) == 0 :
+                        self.sublconsole.showlog("The list of %s is none!" % (key), type='error')
                 params.append(data)
         return params
 

@@ -9,6 +9,10 @@
                 "caption": "Run Cmder",
                 "command": "cmder"
             },
+            {
+                "caption": "Print Command",
+                "command": "print_cmder"
+            },
             {  
                 "caption":"Settings – Default" ,  
                 "command": "open_file", "args":  
@@ -18,7 +22,11 @@
             },  
             {  
                 "caption":"Settings – User" ,  
-                "command": "open_cmder_setting"
+                // "command": "open_cmder_setting"
+                "command": "open_file", "args":  
+                {  
+                    "file": "${packages}/User/cmder.sublime-settings"  
+                }     
             },
             { "caption": "-" },
             {
