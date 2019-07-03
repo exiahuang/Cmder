@@ -102,6 +102,13 @@ class CommandEnv():
             executable_path = app_path + "Contents/SharedSupport/bin/subl"
         return executable_path
 
+    def __get_relativeFile(self, file, workspaceFolder):
+        try:
+            return os.path.relpath(file, workspaceFolder)
+        except Exception as e:
+            pass
+        return file
+
     def get_env(self):
         workspaceFolder = self._get_workspaceFolder()
         file = self.window.active_view().file_name()
@@ -117,7 +124,7 @@ class CommandEnv():
             "file" : file,
             "fileBasenameNoExtension": fileBasenameNoExtension,
             "fileExtname": fileExtname,
-            "relativeFile" : file.replace(workspaceFolder, ""),
+            "relativeFile" : self.__get_relativeFile(file, workspaceFolder),
             "relativeDirs" : relativeDirs,
             "fileBasename": os.path.basename(file),
             "fileDirname" : os.path.dirname(file),
