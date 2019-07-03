@@ -1,0 +1,16 @@
+{
+    "extensions": [
+        "vue",
+        "pug",
+        "jade",
+        "page",
+        "component",
+        "email",
+        "auradoc",
+        "cmp",
+        "design",
+        "app",
+        "intf",
+        "evt"
+    ]
+}
