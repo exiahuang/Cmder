@@ -1,0 +1,20 @@
+[
+    { "caption": "-" },
+    {
+        "caption": "Cmder",
+        "children":[
+            {
+                "caption": "Right Click Echo Only!",
+                "command": "run_cmder",
+                "args": {
+                    "paths": [],
+                    "task": {
+                        // "os_termial" : true,
+                        // "encoding" : "UTF-8",
+                        "command": "echo ${SELECTED_PATH}"
+                    }
+                }
+            }
+        ]
+    }
+]

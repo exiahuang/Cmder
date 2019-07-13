@@ -30,6 +30,21 @@
             },
             { "caption": "-" },
             {
+                "caption":"Custom Side Bar" ,
+                "command": "open_file", "args":
+                {
+                    "file": "${packages}/User/Side bar.sublime-menu"
+                }
+            },
+            {
+                "caption":"Custom Right Click Menu" ,
+                "command": "open_file", "args":
+                {
+                    "file": "${packages}/User/Context.sublime-menu"
+                }
+            },
+            { "caption": "-" },
+            {
                 "caption": "Home Page",
                 "command": "exia_open_url",
                 "args":{  

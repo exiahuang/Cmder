@@ -31,23 +31,38 @@ class CmderCommand(sublime_plugin.WindowCommand):
     def run(self):
         self.window = sublime.active_window()
         self.sublconsole = SublConsole(window=self.window, name='Cmder')
-        s = sublime.load_settings(CMDER_SETTING)
-        tasks = s.get("tasks")
-        self.env = s.get("custom_env")
-        self.env.update(DxEnv().get_env())
-        self.env.update(CommandEnv(self.window).get_env())
-        self.sel_keys = [task["label"] for task in tasks]
-        self.sel_vals = [task for task in tasks]
-        self.window.show_quick_panel(self.sel_keys, self.panel_done, sublime.MONOSPACE_FONT)
+        self.config = Config().get_config(window=self.window)
+        self.window.show_quick_panel(self.config["task_keys"], self.panel_done, sublime.MONOSPACE_FONT)
 
     def panel_done(self, picked):
         if 0 > picked < len(self.sel_keys):
             return
-        self.task = self.sel_vals[picked]
-        is_os_termial = self.task["os_termial"] if "os_termial" in self.task else False
-        encoding = self.task["encoding"] if "encoding" in self.task else None
-        Cmder().run(self.window, self.env, self.task, sublconsole=self.sublconsole, is_os_termial=is_os_termial, encoding=encoding)
+        task = self.config["tasks"][picked]
+        Cmder(self.window, self.config, task, sublconsole=self.sublconsole).run()
 
+class Config():
+    def get_config(self, window):
+        s = sublime.load_settings(CMDER_SETTING)
+        tasks = s.get("tasks")
+        env = s.get("custom_env")
+        env.update(DxEnv().get_env())
+        env.update(CommandEnv(window).get_env())
+        task_keys = [task["label"] for task in tasks]
+        triggers = s.get("triggers") if s.has("triggers") else {}
+        return {
+            "tasks" : tasks,
+            "encoding" : s.get("encoding") if s.has("encoding") else None,
+            "env" : env,
+            "task_keys" : task_keys,
+            "after_save_triggers" : triggers["after_save_triggers"] if "after_save_triggers" in triggers else []
+        }
+
+    def get_task(self, window, task_label):
+        config = self.get_config(window)
+        for task in config["tasks"]:
+            if task_label == task["label"]:
+                return task
+        return None
 
 class PrintCmderCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -153,21 +168,83 @@ class CommandEnv():
 
 
 class Cmder():
-    def run(self, window, command_env, task, sublconsole, is_os_termial=False, encoding='UTF-8'):
+    def __init__(self, window, config, task, sublconsole):
         self.index = 0
         self.window = window
         self.sublconsole = sublconsole
-        self.encoding = encoding
-        self.is_os_termial = is_os_termial
-        self.env = command_env
+        self.config = config
+        self.env = config["env"]
+        self.encoding = task["encoding"] if "encoding" in task else self.config["encoding"]
+        self.is_os_termial = task["os_termial"] if "os_termial" in task else False
         self.task = task
         self.command = task["command"]
         self.params = self.__get_command_params(self.command)
         self.osutil = OsUtil(platform=sublime.platform(), sublconsole=self.sublconsole)
-        UiWizard(command_params=self.params, 
-                window=self.window, 
-                callback=self.on_wizard_done).run()
-    
+
+    def __validator(self):
+        if "filetype" in self.task:
+            if not isinstance(self.task["filetype"], list):
+                return {
+                    "state" : False,
+                    "code" : 11 ,
+                    "msg" : "please check your filetype setting!"
+                }
+            if self.env["fileExtname"] not in self.task["filetype"]:
+                return {
+                    "state" : False,
+                    "code" : 1 ,
+                    "msg" : "Type not match, Do not run command!"
+                }
+
+        if "folder_exclude" in self.task:
+            if not isinstance(self.task["folder_exclude"], list):
+                return {
+                    "state" : False,
+                    "code" : 11 ,
+                    "msg" : "please check your folder_exclude setting!"
+                }
+            file = self.env["file"]
+            for ex_dir in self.task["folder_exclude"]:
+                if os.path.abspath(ex_dir) in file:
+                    return {
+                        "state" : False,
+                        "code" : 2 ,
+                        "msg" : "Exclude folder, Do not run command!"
+                    }
+
+        if "folder_include" in self.task:
+            if not isinstance(self.task["folder_include"], list):
+                return {
+                    "state" : False,
+                    "code" : 12 ,
+                    "msg" : "please check your folder_include setting!"
+                }
+            file = self.env["file"]
+            can_run = False
+            for in_dir in self.task["folder_include"]:
+                if os.path.abspath(in_dir) in file:
+                    can_run = True
+                    break
+            if not can_run:
+                return {
+                    "state" : False,
+                    "code" : 3 ,
+                    "msg" : "Include folder, Do not run command!"
+                }
+
+        return {
+            "state" : True,
+            "code" : 0 ,
+            "msg" : "OK"
+        }
+
+    def run(self):
+        check_result = self.__validator()
+        if check_result["code"] > 10:
+            self.sublconsole.showlog(check_result["msg"])
+        if check_result["state"]:
+            UiWizard(command_params=self.params, window=self.window, callback=self.on_wizard_done).run()
+
     def on_wizard_done(self, user_params):
         command = self.command
 
@@ -271,3 +348,25 @@ class UiWizard():
         else:
             self.callback(self.command_params)
 
+#handles compiling to server on save
+class SaveListener(sublime_plugin.EventListener):
+    def on_post_save(self, view):
+        self.window = sublime.active_window()
+        self.sublconsole = SublConsole(window=self.window, name='Cmder')
+        self.config = Config().get_config(window=self.window)
+        for task in self.config["after_save_triggers"]:
+            command = task["command"]
+            if not command : continue
+            Cmder(self.window, self.config, task, sublconsole=self.sublconsole).run()
+
+class RunCmderCommand(sublime_plugin.WindowCommand):
+    def run(self, task, dirs=None, files=None, paths=None):
+        selected_path = paths[0] if paths and len(paths) > 0 else ''
+        self.window = sublime.active_window()
+        self.sublconsole = SublConsole(window=self.window, name='Cmder')
+        self.config = Config().get_config(window=self.window)
+        self.sublconsole.showlog(paths)
+        if not task : return
+        if not "command" in task: return
+        task["command"] = task["command"].replace("${SELECTED_PATH}", selected_path)
+        Cmder(self.window, self.config, task, sublconsole=self.sublconsole).run()

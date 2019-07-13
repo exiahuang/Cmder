@@ -1,5 +1,6 @@
 {
     "extensions": [
+        "apex-anonymous",
         "cls",
         "log",
         "trigger"

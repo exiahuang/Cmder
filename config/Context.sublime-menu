@@ -1,0 +1,17 @@
+[
+  {
+    "caption": "Cmder",
+    "children": [
+      {
+        "caption": "echo file path",
+        "command": "run_cmder",
+        "args": {
+          "task": {
+            "command": "echo ${file}"
+          }
+        }
+      }
+    ]
+  },
+  { "caption": "-" }
+]
