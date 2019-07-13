@@ -6,9 +6,10 @@
 
 import sublime
 import sublime_plugin
-import os,datetime
+import os, datetime
 import threading
 import subprocess
+
 
 def xstr(s):
     if s is None:
@@ -28,7 +29,7 @@ class XyPanel(object):
 
     def scroll_to_bottom(self, panel):
         size = panel.size()
-        sublime.set_timeout(lambda : panel.show(size, True), 2)
+        sublime.set_timeout(lambda: panel.show(size, True), 2)
 
     @classmethod
     def show_in_panel(cls, window, panel_name, message_str):
@@ -41,19 +42,14 @@ class XyPanel(object):
             panel.settings().set('line_numbers', True)
             cls.panels[panel_name] = panel
 
-        window.run_command('show_panel', {
-                'panel': 'output.' + panel_name
-        })
+        window.run_command('show_panel', {'panel': 'output.' + panel_name})
         if message_str:
             message_str += '\n'
 
-        panel.run_command("append", {
-                "characters": message_str
-        })
+        panel.run_command("append", {"characters": message_str})
 
         size = panel.size()
-        sublime.set_timeout(lambda : panel.show(size, True), 2)
-
+        sublime.set_timeout(lambda: panel.show(size, True), 2)
 
 
 ##########################################################################################
@@ -100,28 +96,33 @@ class SublConsole():
             bar[counter] = '='
             counter += direction
             self.status('%s [%s]' % (msg, ''.join(bar)))
-            sublime.set_timeout(lambda: self.handle_thread(thread, msg,  counter,
-                                direction, width), 100)
+            sublime.set_timeout(
+                lambda: self.handle_thread(thread, msg, counter, direction,
+                                           width), 100)
         else:
             self.status(' ok ')
 
     def open_file(self, file_path):
-        if os.path.isfile(file_path): 
+        if os.path.isfile(file_path):
             self.window.open_file(file_path)
 
-    def save_and_open_in_panel(self, message_str, save_dir, save_file_name , is_open=True):
-        save_path =  os.path.join(save_dir, save_file_name)
+    def save_and_open_in_panel(self,
+                               message_str,
+                               save_dir,
+                               save_file_name,
+                               is_open=True):
+        save_path = os.path.join(save_dir, save_file_name)
         self.debug(save_dir)
         self.debug(save_file_name)
         self.showlog("save file : " + save_path)
 
         # delete old file
-        if os.path.isfile(save_path): 
+        if os.path.isfile(save_path):
             os.remove(save_path)
 
         # save file
         self.save_file(save_path, message_str)
-        if is_open: 
+        if is_open:
             self.open_file(save_path)
         return save_path
 
@@ -144,11 +145,7 @@ class SublConsole():
         view.set_syntax_file('Packages/Java/Java.tmLanguage')
         if name:
             view.set_name(name)
-        view.run_command("insert_snippet", 
-            {
-                "contents": xstr(message_str)
-            }
-        )
+        view.run_command("insert_snippet", {"contents": xstr(message_str)})
 
     def open_project(self, open_path):
         executable_path = sublime.executable_path()
@@ -157,33 +154,34 @@ class SublConsole():
             executable_path = app_path + "Contents/SharedSupport/bin/subl"
 
         if sublime.platform() == "windows":
-            subprocess.Popen('"{0}" --project "{1}"'.format(executable_path, open_path), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            subprocess.Popen('"{0}" --project "{1}"'.format(
+                executable_path, open_path),
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             shell=True)
         else:
-            process = subprocess.Popen([executable_path, '--project', open_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            process = subprocess.Popen(
+                [executable_path, '--project', open_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
             self.debug(stdout)
             self.showlog(stderr)
 
     def open_in_new_tab(self, message, tab_name):
         view = self.window.new_file()
-        view.run_command("new_view", {
-            "name": tab_name,
-            "input": message
-        })
+        view.run_command("new_view", {"name": tab_name, "input": message})
 
     def insert_str(self, message_str):
-        self.window.run_command("insert_snippet", 
-            {
-                "contents": xstr(message_str)
-            }
-        )
+        self.window.run_command("insert_snippet",
+                                {"contents": xstr(message_str)})
 
     def thread_run(self, group=None, target=None, name=None, args=()):
         thread = threading.Thread(target=target, args=args, name=name)
         thread.start()
         self.handle_thread(thread)
         return thread
-    
+
     def close_views(self, main_path):
         for _view in self.window.views():
             file_name = _view.file_name()

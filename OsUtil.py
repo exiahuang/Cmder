@@ -4,7 +4,8 @@
 # github: https://github.com/exiahuang
 ###############################################################################
 
-import os,sys, subprocess,threading
+import os, sys, subprocess, threading
+
 
 class OsUtil():
     def __init__(self, platform, sublconsole):
@@ -16,15 +17,22 @@ class OsUtil():
         if not encoding: encoding = self.sys_encoding
         print("*" * 80)
         print("encoding: " + encoding)
-        self.sublconsole.thread_run(target=self._run_cmd, args=(cmd_list, encoding,))
-    
+        self.sublconsole.thread_run(target=self._run_cmd,
+                                    args=(
+                                        cmd_list,
+                                        encoding,
+                                    ))
+
     def _run_cmd(self, cmd_list, encoding):
         self.sublconsole.showlog("*" * 80)
         cmd_str = self._get_cmd_str(cmd_list)
-        process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(cmd_str,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
         while True:
             line = process.stdout.readline()
-            if line != '' and line != b'' :
+            if line != '' and line != b'':
                 #the real code does filtering here
                 try:
                     msg = line.rstrip().decode(encoding)
@@ -49,9 +57,9 @@ class OsUtil():
         if self.platform == "windows":
             cmd_list.append("pause")
         cmd_str = self._get_cmd_str(cmd_list)
-        thread = threading.Thread(target=os.system, args=(cmd_str,))
+        thread = threading.Thread(target=os.system, args=(cmd_str, ))
         thread.start()
-    
+
     def _get_cmd_str(self, cmd_list):
         cmd_str = " & ".join(cmd_list)
         return cmd_str

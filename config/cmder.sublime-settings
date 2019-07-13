@@ -57,5 +57,45 @@
     "custom_env" : {
         "log_file" : "./tmp.log",
         "LOGLEVEL" : ["trace", "debug", "info", "warn", "error", "fatal"]
+    },
+    "triggers" : {
+        "after_save_triggers" : [
+            // {
+            //     "desc" : "format python code",
+            //     "filetype" : [".py"],
+            //     // "folder_include" : [""],
+            //     // "folder_exclude" : [""],
+            //     "encoding" : "UTF-8",
+            //     "command" : "yapf \"${file}\" --style \"google\" -i"
+            // },
+            // {
+            //     "desc" : "use prettier format source",
+            //     "filetype" : [".json", ".javascript", ".js", ".md", ".css", ".vue", ".yaml", ".yml"],
+            //     // "folder_include" : [""],
+            //     // "folder_exclude" : [""],
+            //     "encoding" : "UTF-8",
+            //     "command" : "prettier --write \"${file}\" --single-quote=true --end-of-line=lf --arrow-parens=always"
+            // },
+            // {
+            //     "desc" : "format salesforce visual force, component, xml page code",
+            //     "filetype" : [".cmp", ".page", ".component", ".xml"],
+            //     // "folder_include" : [""],
+            //     // "folder_exclude" : [""],
+            //     "command" : "prettier --write \"${file}\" --single-quote=true --tab-width=4 --parser=html --end-of-line=lf --arrow-parens=always"
+            // },
+            // {
+            //     // install prettier-plugin-apex
+            //     // npm install --global prettier prettier-plugin-apex
+            //     "desc" : "format salesforce trigger, classes",
+            //     "filetype" : [".trigger", ".cls"],
+            //     // "folder_exclude" : [""],
+            //     "command" : "prettier --parser=apex --write \"${file}\" --tab-width=4 --single-quote=true"
+            // },
+            // {
+            //     "desc" : "format salesforce apex anonymous",
+            //     "filetype" : [".apex-anonymous"],
+            //     "command" : "prettier --parser=apex --write \"${file}\" --tab-width=4 --single-quote=true --apex-anonymous"
+            // }
+        ]
     }
 }
